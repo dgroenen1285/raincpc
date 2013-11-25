@@ -1,5 +1,9 @@
 #' Download raw rainfall data from CPC for time period of interest
 #'
+#' It is assumed that the ending year, month and day follow the beginning
+#' year, month and day. Output is either a ".gz" file (1979 - 2008) or a 
+#' ".bin" file (2009 - 2013).
+#' 
 #' @param begYr beginning year of the time period of interest, 1979 - 2012
 #' @param begMo beginning month of the time period of interest, 1 - 12
 #' @param begDay beginning day of the time period of interest, 1 - 28/29/30/31
@@ -8,18 +12,25 @@
 #' @param endDay ending day of the time period of interest, 1 - 28/29/30/31
 #' @export
 #' @examples
-#' # CPC data for Jan 01 2012
-#' cpc_1day <- cpc_get_rawdata(2012, 1, 1, 2012, 1, 1)
+#' # CPC data for 1 day, Jan 01 2008
+#' cpc_get_rawdata(2008, 1, 1, 2008, 1, 1)
 #' 
-#' # CPC data for Jan 01 - Jan 02, 2012
-#' cpc_2days <- cpc_get_rawdata(2012, 1, 1, 2012, 1, 2)
+#' # CPC data for two days, Jul 11-12 2005
+#' cpc_get_rawdata(2005, 7, 11, 2005, 7, 12)
 
 cpc_get_rawdata <- function(begYr, begMo, begDay, endYr, endMo, endDay) {                            
   
-  # check year and month validity
-  # day validity - mostly leave it up to the user
+  # check year validity
   if (!(begYr %in% seq(1979, 2012) & endYr %in% seq(1979, 2012))) {
-    stop("year should be between 1979 to 2012!")
+    stop("beginning and ending year should be between 1979 to 2012!")
+  }
+  # check dates validity
+  check_dates <- try(seq(as.Date(paste(begYr, begMo, begDay, sep = "-")), 
+                         as.Date(paste(endYr, endMo, endDay, sep = "-")), 
+                         by = "day"), 
+                     silent = TRUE)
+  if (class(check_dates) == "try-error") {
+    stop("Date range appears to be invalid!")
   }
   
   # url and file prefixes
@@ -38,13 +49,25 @@ cpc_get_rawdata <- function(begYr, begMo, begDay, endYr, endMo, endDay) {
     yrStr    <- substr(allDates, 1, 4)
     
     # identify file names and extensions
-    filex <- cpc_file_extns(eachYr)
+    if (eachYr %in% seq(1979, 2005)) {
+      urlTag  <- "V1.0/"
+      fileTag <- ".gz"
+    } else if (eachYr %in% c(2006)) {
+      urlTag  <- "RT/"
+      fileTag <- "RT.gz"
+    } else if (eachYr %in% c(2007, 2008)) {
+      urlTag  <- "RT/"
+      fileTag <- ".RT.gz"
+    } else { #if (eachYr %in% seq(2009, 2013)) {
+      urlTag  <- "RT/"
+      fileTag <- ".RT"
+    } 
     
     # download
     for (eachDay in 1:length(allDates)) {
       # construct url
-      fileUrl <- paste0(urlHead, filex$urlTag, yrStr[eachDay], "/", fileHead, 
-                        dateStr[eachDay], filex$fileTag)
+      fileUrl <- paste0(urlHead, urlTag, yrStr[eachDay], "/", fileHead, 
+                        dateStr[eachDay], fileTag)
       
       # out file name; gzipped file prior to 2008 otherwise binary
       outFile <- ifelse(eachYr <= 2008, 
@@ -54,9 +77,12 @@ cpc_get_rawdata <- function(begYr, begMo, begDay, endYr, endMo, endDay) {
       # download file only if it doesnt exist
       # internet connection could be "intermittent" - could be due to the CPC server?
       # hence files are not sometimes downloaded; hence the quieted while loop below
+      # max tries limited to 20 to avoid infinite loops
       if (!file.exists(outFile)) {
         fileError <- TRUE
-        while (fileError) {
+        max_tries <- 0
+        while (fileError & max_tries < 20) {
+          max_tries <- max_tries + 1
           if (eachYr <= 2008) {
             fileStatus <- try(download.file(url = fileUrl, 
                                             destfile = outFile, 

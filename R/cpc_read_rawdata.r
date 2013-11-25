@@ -1,6 +1,24 @@
-# read raw cpc data
+#' Read downloaded raw rainfall data from CPC
+#'
+#' Function checks for the existence of the raw files from CPC and only then
+#' attempts to process the data. Output matrix is written to a binary file. 
+#' The output matrix has 360 rows (latitudes) and 720 columns (longitudes) of 
+#' rainfall/precipitation in units of mm/day. The first data point has the lat, 
+#' lon values of -89.75 and 0.25 degrees, respectively. Spatial resolution of 
+#' the data is 0.5 degrees. Refer to the project home page for plotting the data 
+#' with proper North-South orientation.
+#' 
+#' @param yr year associated with the downloaded file, 1979 - 2012
+#' @param mo month associated with the downloaded file, 1 - 12
+#' @param day day associated with the downloaded file, 1 - 28/29/30/31
+#' @export
+#' @examples
+#' # CPC data for Jan 01 2008
+#' cpc_1day <- cpc_read_rawdata(2008, 1, 1)
 
 cpc_read_rawdata <- function(yr, mo, day) {
+  
+  stopifnot(!(any(c(yr, mo, day) %in% c(""))))
   
   # file name
   dateStr <- paste0(yr, sprintf("%.2d", mo), sprintf("%.2d", day))
@@ -8,8 +26,16 @@ cpc_read_rawdata <- function(yr, mo, day) {
   if (yr <= 2008) {
     cpcFile <- paste0("raw_", dateStr, ".gz")
   }
-  stopifnot(file.exists(cpcFile))
+  if(!(file.exists(cpcFile))) {
+    stop("Raw file from CPC doesnt exist! First run cpc_get_rawdata()!")
+  }
   
+  # data attributes, from PRCP_CU_GAUGE_V1.0GLB_0.50deg_README.txt
+  cpcNumLat   <- 360 # number of lats
+  cpcNumLon   <- 720 # number of lons
+  cpcNumBytes <- cpcNumLat * cpcNumLon * 2 # 2 fields, precipitation and num gages
+  
+  # read data
   # open file connection
   if (yr <= 2008) {
     fileCon <- gzcon(file(cpcFile, "rb"))
@@ -17,27 +43,16 @@ cpc_read_rawdata <- function(yr, mo, day) {
     fileCon <- file(cpcFile, "rb")
   }
   
-  # data attributes, from PRCP_CU_GAUGE_V1.0GLB_0.50deg_README.txt
-  cpcNumLat   <- 360 # number of lats
-  cpcNumLon   <- 720 # number of lons
-  cpcNumBytes <- cpcNumLat * cpcNumLon * 2 # 2 fields, precipitation and num gages
-  cpcRes      <- 0.5 # data resolution
-  cpcLatVec   <- -89.75 + (1:cpcNumLat) * cpcRes - cpcRes # latitudes
-  cpcLonVec   <- 0.25 + (1:cpcNumLon) * cpcRes - cpcRes # longitudes
-  
-  # read data
   inData  <- readBin(con = fileCon, 
                      what = numeric(), 
                      n = cpcNumBytes, 
-                     size = 4, 
-                     endian = "little")
+                     size = 4)
   close(fileCon)
   
   # extract first field (precipitation), ignore second field (num gages)
   inData <- inData[1:(cpcNumBytes/2)]
   
-  # reshape, flip rows for proper North-South orientation
-  # original data goes from South to North
+  # CPC raw data goes from South to North; need to flip rows for plotting
   prcpData <- array(0, dim = c(cpcNumLat, cpcNumLon))
   for(eachRow in 1:cpcNumLat) {
     index1 <- 1 + (eachRow - 1) * cpcNumLon
@@ -51,7 +66,7 @@ cpc_read_rawdata <- function(yr, mo, day) {
   
   # write data to file
   outCon <- file(paste0(dateStr, ".bin"), "wb")
-  writeBin(as.numeric(prcpData), con = outCon, size = 4, endian = "little")
+  writeBin(as.numeric(prcpData), con = outCon, size = 4)
   close(outCon)
   
   return (prcpData)
