@@ -1,0 +1,28 @@
+R package raincpc: Obtain and Analyze Rainfall data from the Climate Prediction Center (CPC)
+========================================================
+
+The Climate Prediction Center's (CPC, www.cpc.ncep.noaa.gov) daily rainfall data for the entire world, from 1979 to the present, at a resolution of 50 km (0.5 degrees lat-lon), is one of the few high quality and long-term observation-based rainfall products available for free. Data is available at CPC's (ftp site)[(ftp.cpc.ncep.noaa.gov/precip/CPC_UNI_PRCP/GAUGE_GLB/]. 
+
+Some issues with size and format of the CPC data:
+* there are too many daily files (365/366 per year * 34 years, separate folder for each year)
+* file naming conventions have changed over time, one format prior to 2006 and couple of different formats afterwards
+* downloading multiple files simultaneously from the CPC ftp site, using wget, does not seem to work properly
+* file formats have changed over time, gzipped files prior to 2008 and binary files afterwards
+* files are in binary format and there no software/code readily available to process/plot the data
+
+R package `raincpc`:
+* One function to download the data from CPC (`cpc_get_rawdata`) and one function to process the downloaded data (`cpc_read_rawdata`)
+* Examples provided to plot spatial maps using ggplot
+
+
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+
