@@ -12,7 +12,7 @@ Some issues with size/format of the CPC data:
 * there is no software/code readily available to easily process/visualize the data
 
 R package `raincpc`:
-* Data for anytime period during 1979-2012 can be downloaded and processed
+* Data for anytime period during 1979-present can be downloaded and processed
 * Just two functions required: one to download the data (`cpc_get_rawdata`) and another to process the downloaded data (`cpc_read_rawdata`)
 * Making spatial maps using the processed data is easy, via ggplot
 
