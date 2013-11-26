@@ -1,7 +1,7 @@
 R package raincpc: Obtain and Analyze Rainfall data from the Climate Prediction Center (CPC)
 ========================================================
 
-The Climate Prediction Center's ([CPC](www.cpc.ncep.noaa.gov)) daily rainfall data for the entire world, 1979 - present & 50-km resolution, is one of the few high quality and long-term observation-based rainfall products available for free. Data is available at CPC's [ftp site](ftp.cpc.ncep.noaa.gov/precip/CPC_UNI_PRCP/GAUGE_GLB/). However, it is a lot of data and there is no software to analyze and visualize the data.
+The Climate Prediction Center's daily rainfall data for the entire world, [CPC](www.cpc.ncep.noaa.gov), 1979 - present & 50-km resolution, is one of the few high quality and long-term observation-based rainfall products available for free. Data is available at CPC's [ftp site](ftp.cpc.ncep.noaa.gov/precip/CPC_UNI_PRCP/GAUGE_GLB/). However, it is a lot of data and there is no software to analyze and visualize the data.
 
 Some issues with size/format of the CPC data:
 * too many files (365/366 files per year * 34 years, separate folder for each year)
