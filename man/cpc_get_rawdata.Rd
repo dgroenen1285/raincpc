@@ -25,14 +25,20 @@
   1 - 28/29/30/31}
 }
 \description{
+  This function obtains data from the CPC ftp site for any
+  time period from 1979/1/1 to the present day.
+}
+\details{
   It is assumed that the ending year, month and day follow
-  the beginning year, month and day. Output is either a
-  ".gz" file (1979 - 2008) or a ".bin" file (2009 - 2013).
+  the beginning year, month and day. Although CPC data is
+  revised each day, a buffer of two days is created - i.e.,
+  this function will only let you download data till the
+  day before yesterday!
+
+  Output is either a ".gz" file (1979 - 2008) or a ".bin"
+  file (2009 - 2013).
 }
 \examples{
-# CPC data for 1 day, Jan 01 2008
-cpc_get_rawdata(2008, 1, 1, 2008, 1, 1)
-
 # CPC data for two days, Jul 11-12 2005
 cpc_get_rawdata(2005, 7, 11, 2005, 7, 12)
 }

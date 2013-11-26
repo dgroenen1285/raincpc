@@ -1,8 +1,14 @@
 #' Download raw rainfall data from CPC for time period of interest
 #'
+#' This function obtains data from the CPC ftp site for any time period from
+#' 1979/1/1 to the present day.
+#' 
 #' It is assumed that the ending year, month and day follow the beginning
-#' year, month and day. Output is either a ".gz" file (1979 - 2008) or a 
-#' ".bin" file (2009 - 2013).
+#' year, month and day. Although CPC data is revised each day, a buffer
+#' of two days is created - i.e., this function will only let you download
+#' data till the day before yesterday! 
+#' 
+#' Output is either a ".gz" file (1979 - 2008) or a ".bin" file (2009 - 2013). 
 #' 
 #' @param begYr beginning year of the time period of interest, 1979 - 2012
 #' @param begMo beginning month of the time period of interest, 1 - 12
@@ -12,17 +18,14 @@
 #' @param endDay ending day of the time period of interest, 1 - 28/29/30/31
 #' @export
 #' @examples
-#' # CPC data for 1 day, Jan 01 2008
-#' cpc_get_rawdata(2008, 1, 1, 2008, 1, 1)
-#' 
 #' # CPC data for two days, Jul 11-12 2005
 #' cpc_get_rawdata(2005, 7, 11, 2005, 7, 12)
 
 cpc_get_rawdata <- function(begYr, begMo, begDay, endYr, endMo, endDay) {                            
   
   # check year validity
-  if (!(begYr %in% seq(1979, 2012) & endYr %in% seq(1979, 2012))) {
-    stop("beginning and ending year should be between 1979 to 2012!")
+  if (!(begYr %in% seq(1979, 2013) & endYr %in% seq(1979, 2013))) {
+    stop("Beginning and ending year should be between 1979 to 2013!")
   }
   # check dates validity
   check_dates <- try(seq(as.Date(paste(begYr, begMo, begDay, sep = "-")), 
@@ -32,7 +35,15 @@ cpc_get_rawdata <- function(begYr, begMo, begDay, endYr, endMo, endDay) {
   if (class(check_dates) == "try-error") {
     stop("Date range appears to be invalid!")
   }
-  
+  # check dates validity - ensure end year, month and day are before present date
+  check_dates <- try(seq(as.Date(paste(endYr, endMo, endDay, sep = "-")),
+                         Sys.Date() - 2, 
+                         by = "day"), 
+                     silent = TRUE)
+  if (class(check_dates) == "try-error") {
+    stop("End date should be two days before the present day!")
+  }
+    
   # url and file prefixes
   urlHead  <- "ftp://ftp.cpc.ncep.noaa.gov/precip/CPC_UNI_PRCP/GAUGE_GLB/"
   fileHead <- "PRCP_CU_GAUGE_V1.0GLB_0.50deg.lnx."
