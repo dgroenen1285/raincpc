@@ -29,14 +29,14 @@ library(reshape2)
 ```
 
 
-Rainfall during the time of Hurricane Katrina, Aug - Sep of 2005.
+Rainfall during the last week of November 2013.
 
 
 ```r
 # obtain data
-cpc_get_rawdata(2005, 8, 31, 2005, 8, 31)
+cpc_get_rawdata(2013, 11, 24, 2013, 11, 24)
 # process data
-katrina <- cpc_read_rawdata(2005, 8, 31)
+noreaster <- cpc_read_rawdata(2013, 11, 24)
 ```
 
 
@@ -44,18 +44,18 @@ Re-orient data for plotting.
 
 
 ```r
-# function to flip a matrix upside down (change CPC orientation from S-N
-# to N-S)
+# function to flip a matrix upside down (change CPC orientation from S-N to
+# N-S)
 Fn_Flip_Matrix_Rows <- function(mat) {
     return(mat[nrow(mat):1, ])
 }
-# function to rotate a matrix 90 degress clockwise for plotting only used
-# to counteract the 'image' function default behavior
+# function to rotate a matrix 90 degress clockwise for plotting only used to
+# counteract the 'image' function default behavior
 Fn_Rotate_Matrix <- function(mat) {
     return(t(mat)[, nrow(mat):1])
 }
 
-katrina <- Fn_Rotate_Matrix(Fn_Flip_Matrix_Rows(katrina))
+noreaster <- Fn_Rotate_Matrix(Fn_Flip_Matrix_Rows(noreaster))
 ```
 
 
@@ -63,13 +63,13 @@ Global rainfall map.
 
 
 ```r
-gfx_map <- ggplot(data = melt(katrina))
+gfx_map <- ggplot(data = melt(noreaster))
 gfx_map <- gfx_map + geom_raster(aes(Var1, Var2, fill = value))
 gfx_map <- gfx_map + theme(axis.text = element_blank(), axis.ticks = element_blank())
 gfx_map <- gfx_map + labs(x = NULL, y = NULL, fill = "Rain (mm/day)")
-gfx_map <- gfx_map + ggtitle("Rainfall During Hurricane Katrina: 2005/8/31")
+gfx_map <- gfx_map + ggtitle("Rainfall During Noreaster of Nov 2013")
 
-png("gfx_katrina.png", width = 800, height = 650)
+png("gfx_noreaster.png", width = 800, height = 650)
 plot(gfx_map)
 garbage <- dev.off()
 ```
@@ -77,4 +77,4 @@ garbage <- dev.off()
 
 ![figure 1] [fig1]
 
-[fig1]: gfx_katrina.png "figure 1" 
+[fig1]: gfx_noreaster.png "figure 1" 
