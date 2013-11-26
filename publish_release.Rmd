@@ -29,13 +29,15 @@ library(reshape2)
 Rainfall during the time of Hurricane Katrina, Aug - Sep of 2005.
 
 ```{r}
-# obtain data from CPC
+# obtain data
 cpc_get_rawdata(2005, 8, 31, 2005, 8, 31) 
 # process data
 katrina <- cpc_read_rawdata(2005, 8, 31) 
+```
 
-# re-orient data for plotting
+re-orient data for plotting
 
+```{r}
 # function to flip a matrix upside down (change CPC orientation from S-N to N-S)
 Fn_Flip_Matrix_Rows <- function(mat) {
   return (mat[nrow(mat):1,])
@@ -56,6 +58,12 @@ gfx_map <- gfx_map + theme(axis.text = element_blank(),
 gfx_map <- gfx_map + labs(x = NULL, y = NULL, fill = "Rain (mm/day)")
 gfx_map <- gfx_map + ggtitle("Rainfall During Hurricane Katrina: 2005/8/31")
   
+png("gfx_katrina.png", width = 800, height = 650)
 plot(gfx_map)
+garbage <- dev.off()
 ```
+
+![figure 1] [fig1]
+
+[fig1]: gfx_katrina.png "figure 1" 
 
