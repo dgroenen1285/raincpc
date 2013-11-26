@@ -1,28 +1,61 @@
 R package raincpc: Obtain and Analyze Rainfall data from the Climate Prediction Center (CPC)
 ========================================================
 
-The Climate Prediction Center's (CPC, www.cpc.ncep.noaa.gov) daily rainfall data for the entire world, from 1979 to the present, at a resolution of 50 km (0.5 degrees lat-lon), is one of the few high quality and long-term observation-based rainfall products available for free. Data is available at CPC's (ftp site)[(ftp.cpc.ncep.noaa.gov/precip/CPC_UNI_PRCP/GAUGE_GLB/]. 
+The Climate Prediction Center's (CPC, www.cpc.ncep.noaa.gov) daily rainfall data for the entire world, 1979 - present & 50-km resolution, is one of the few high quality and long-term observation-based rainfall products available for free. Data is available at CPC's (ftp site)[(ftp.cpc.ncep.noaa.gov/precip/CPC_UNI_PRCP/GAUGE_GLB/]. 
 
-Some issues with size and format of the CPC data:
+Some issues with size/format of the CPC data:
 * there are too many daily files (365/366 per year * 34 years, separate folder for each year)
 * file naming conventions have changed over time, one format prior to 2006 and couple of different formats afterwards
 * downloading multiple files simultaneously from the CPC ftp site, using wget, does not seem to work properly
-* file formats have changed over time, gzipped files prior to 2008 and binary files afterwards
-* files are in binary format and there no software/code readily available to process/plot the data
+* file formats have changed over time - gzipped files prior to 2008 and binary files afterwards
+* files are in binary format and there is no software/code readily available to process/plot the data
 
 R package `raincpc`:
-* One function to download the data from CPC (`cpc_get_rawdata`) and one function to process the downloaded data (`cpc_read_rawdata`)
-* Examples provided to plot spatial maps using ggplot
+* Data for anytime period during 1979-2012 can be downloaded and processed
+* Just two functions required: one to download the data (`cpc_get_rawdata`) and another to process the downloaded data (`cpc_read_rawdata`)
+* Making spatial maps using the processed data is easy, via ggplot
 
+Here are some examples.
 
+Invoke required libraries.
 
 ```{r}
-summary(cars)
+library(raincpc)
+
+library(ggplot2)
+library(reshape2)
 ```
 
-You can also embed plots, for example:
+Rainfall during the time of Hurricane Katrina, Aug - Sep of 2005.
 
-```{r fig.width=7, fig.height=6}
-plot(cars)
+```{r}
+# obtain data from CPC
+cpc_get_rawdata(2005, 8, 31, 2005, 8, 31) 
+# process data
+katrina <- cpc_read_rawdata(2005, 8, 31) 
+
+# re-orient data for plotting
+
+# function to flip a matrix upside down (change CPC orientation from S-N to N-S)
+Fn_Flip_Matrix_Rows <- function(mat) {
+  return (mat[nrow(mat):1,])
+}
+# function to rotate a matrix 90 degress clockwise for plotting only
+# used to counteract the "image" function default behavior
+Fn_Rotate_Matrix <- function(mat) {
+  return (t(mat)[,nrow(mat):1])
+}
+
+katrina <- Fn_Rotate_Matrix(Fn_Flip_Matrix_Rows(katrina))
+
+# plot data
+gfx_map <- ggplot(data = melt(katrina)) 
+gfx_map <- gfx_map + geom_raster(aes(Var1, Var2, fill = value)) 
+gfx_map <- gfx_map + theme(axis.text = element_blank(), 
+                           axis.ticks = element_blank())
+gfx_map <- gfx_map + labs(x = NULL, y = NULL, fill = "Rain (mm/day)")
+gfx_map <- gfx_map + ggtitle("Rainfall During Hurricane Katrina: 2005/8/31")
+  
+plot(gfx_map)
 ```
 
